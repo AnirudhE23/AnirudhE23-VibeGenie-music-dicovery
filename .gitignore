@@ -1,0 +1,11 @@
+.cache
+.cache-asyrbsvl9lv3fk6se9s8mmmt0
+.env
+.spotify_cache
+.vscode/
+ReccoBeats_test.py
+Sp_oauth_video_test_main.py
+__pycache__/
+script_test.py
+spotify_tracks.csv
+test_script.py
