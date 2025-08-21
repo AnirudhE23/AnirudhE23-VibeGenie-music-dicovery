@@ -2,3 +2,4 @@ Flask==3.0.2
 spotipy==2.25.1
 pandas==2.2.2
 streamlit
+rapidfuzz
