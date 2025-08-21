@@ -9,3 +9,4 @@ __pycache__/
 script_test.py
 spotify_tracks.csv
 test_script.py
+.parquet
