@@ -1,10 +1,22 @@
 import os
+from dotenv import load_dotenv
 
-CLIENT_ID = "76849ce2923a4b5daeb1b51a91e6a9b9"
-CLIENT_SECRET = "c652faa0dae142ae905086d64261b1ee"
-REDIRECT_URI = 'http://127.0.0.1:5000/callback'
+# Load environment variables
+load_dotenv()
 
-SCOPE = 'playlist-read-private, playlist-read-collaborative, user-library-read'
+CLIENT_ID = os.environ.get('CLIENT_ID')
+CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
+REDIRECT_URI = 'http://127.0.0.1:8501/callback'
+SCOPE = 'playlist-read-private playlist-read-collaborative user-library-read user-top-read'
 
-SECRET_KEY = os.urandom(64)
 CSV_OUTPUT = "spotify_tracks.csv"
+USER_TRACKS_CSV = "spotify_user_tracks.csv"
+FEATURES_CACHE = "features_cache.parquet"
+
+# Reccobeats API settings
+RECCOBEATS_API_BASE = "https://api.reccobeats.com/v1"
+RECCOBEATS_HEADERS = {'Accept': 'application/json'}
+
+# Batch processing settings
+BATCH_SIZE = 40
+MAX_WORKERS = 8
