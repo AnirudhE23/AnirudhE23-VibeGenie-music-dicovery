@@ -8,4 +8,17 @@ Sp_oauth_video_test_main.py
 __pycache__/
 script_test.py
 spotify_tracks.csv
-.parquet
+*.parquet
+
+# Model files
+*.h5
+*.pkl
+*.npy
+song_metadata.csv
+merged_spotify_tracks.csv
+merged_tracks.csv
+spotify_user_tracks.csv
+
+# Keep the code structure
+!models/*.py
+!models/__init__.py
