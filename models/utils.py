@@ -126,7 +126,7 @@ def load_models_and_data():
             'encoder': encoder,
             'song_embeddings': song_embeddings,
             'track_ids': track_ids,
-            'metadata_df': metadata_df,
+            'df': metadata_df,
             'scalers': {
                 'bounded': scaler_bounded,
                 'unbounded': scaler_unbounded

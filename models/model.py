@@ -3,6 +3,7 @@
 
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.neighbors import NearestNeighbors
 from .config import MODEL_CONFIG
@@ -137,16 +138,43 @@ class MusicRecommender:
         """
         user_features = user_track_features.copy()
 
+        # Ensure all columns are numeric and handle any data type issues
+        # Include all 12 features that the model was trained on (11 audio + popularity)
+        numeric_cols = ['acousticness', 'danceability', 'energy', 'instrumentalness', 
+                       'liveness', 'speechiness', 'valence', 'loudness', 'tempo', 'key', 'mode', 'popularity']
+        
+        for col in numeric_cols:
+            if col in user_features.columns:
+                # Convert to numeric, coercing errors to NaN
+                user_features[col] = pd.to_numeric(user_features[col], errors='coerce')
+
         # Apply same scaling as training
         bounded_cols = ['acousticness', 'danceability', 'energy', 'instrumentalness', 
                        'liveness', 'speechiness', 'valence']
         unbounded_cols = ['loudness', 'tempo']
 
-        user_features[bounded_cols] = self.scaler_bounded.transform(user_features[bounded_cols])
-        user_features[unbounded_cols] = self.scaler_unbounded.transform(user_features[unbounded_cols])
-        user_features['key'] = user_features['key'] / 11.0
+        # Only process columns that exist and have valid data
+        bounded_cols = [col for col in bounded_cols if col in user_features.columns]
+        unbounded_cols = [col for col in unbounded_cols if col in user_features.columns]
+
+        if bounded_cols:
+            user_features[bounded_cols] = self.scaler_bounded.transform(user_features[bounded_cols])
+        if unbounded_cols:
+            user_features[unbounded_cols] = self.scaler_unbounded.transform(user_features[unbounded_cols])
         
-        return user_features.values
+        # Handle categorical features normalization
+        if 'key' in user_features.columns:
+            user_features['key'] = user_features['key'] / 11.0
+        if 'mode' in user_features.columns:
+            user_features['mode'] = user_features['mode'] / 1.0  # mode is 0 or 1
+        
+        # Handle popularity normalization (0-100 scale)
+        if 'popularity' in user_features.columns:
+            user_features['popularity'] = user_features['popularity'] / 100.0
+        
+        # Select only the numeric columns for the model
+        feature_cols = [col for col in numeric_cols if col in user_features.columns]
+        return user_features[feature_cols].values
 
     def create_user_profile(self, user_track_features):
         """
