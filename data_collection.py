@@ -112,6 +112,54 @@ def collect_user_tracks(sp):
     cached_unique = features_df["Track ID"].nunique() if not features_df.empty else 0
 
     st.write(f"Final rows: {len(final_df)}. With features: {rows_with_features} (unique cached tracks: {cached_unique})")
+    
+    # Automatically clean, add user tracks, and expand training dataset
+    st.info("Cleaning training dataset and adding your tracks in background...")
+    try:
+        import dataset_expansion
+        
+        # Step 1: Clean existing training dataset (remove tracks without audio features)
+        removed_tracks = dataset_expansion.clean_training_dataset()
+        if removed_tracks > 0:
+            st.info(f"Cleaned training dataset: removed {removed_tracks} tracks without audio features")
+        
+        # Step 2: Add user tracks to training dataset
+        user_tracks_added = dataset_expansion.add_user_tracks_to_training_dataset(final_df)
+        if user_tracks_added > 0:
+            st.success(f"Added {user_tracks_added} of your tracks to training dataset!")
+        
+        # Step 3: Expand training dataset with diverse tracks
+        new_tracks = dataset_expansion.expand_training_dataset_background(sp, target_size=150000)
+        if new_tracks > 0:
+            st.success(f"Background expansion added {new_tracks:,} new tracks to training dataset!")
+            st.info("💡 The recommendation model now has access to a larger, more diverse pool of songs!")
+        else:
+            st.info("Training dataset is already at target size.")
+            
+        # Step 4: Note about recommendations and scheduled retraining
+        if user_tracks_added > 0 or new_tracks > 0:
+            st.success("✅ **Great!** Your tracks have been added to the training dataset!")
+            st.info("🎵 **You can now generate recommendations** - the system will use your tracks to find similar songs!")
+            st.info("💡 **Scheduled Retraining**: The model will be automatically retrained during scheduled downtimes for optimal performance")
+            
+            # Show recommendation status
+            st.markdown("""
+            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--border-color); margin: 1rem 0;">
+                <h4 style="color: var(--primary-color); margin-top: 0;">🚀 How Recommendations Work Now:</h4>
+                <ul style="color: var(--text-secondary); line-height: 1.8;">
+                    <li><strong>Immediate Use:</strong> Your tracks are used to find similar songs in the existing dataset</li>
+                    <li><strong>No Waiting:</strong> No need to retrain the model - recommendations work right away!</li>
+                    <li><strong>Better Matching:</strong> The system finds songs similar to your energetic gym music</li>
+                    <li><strong>Scheduled Updates:</strong> Model gets retrained during downtimes for long-term improvements</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.info("No new tracks added, model remains unchanged")
+            
+    except Exception as e:
+        st.warning(f"Background expansion failed: {e}")
+    
     return final_df
 
 def collect_playlist_data(sp):
@@ -141,15 +189,8 @@ def collect_playlist_data(sp):
             album = track['album']['name']
             popularity = track['popularity']
 
-            try:
-                features = sp.audio_features(track_id)[0]
-            except Exception as e:
-                st.error(f"Skipping track {track_id} due to error: {e}")
-                continue
-
-            if not features:
-                continue
-
+            # Note: Using Reccobeats API for audio features instead of deprecated Spotify endpoint
+            # This is handled in the main collect_user_tracks function
             all_data.append({
                 'playlist_name': playlist_name,
                 'playlist_id': playlist_id,
@@ -158,8 +199,7 @@ def collect_playlist_data(sp):
                 'track_name': track_name,
                 'artists': artists,
                 'album': album,
-                'popularity': popularity,
-                **{key: features[key] for key in features if key != 'type'}
+                'popularity': popularity
             })
             time.sleep(0.05)
 

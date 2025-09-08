@@ -76,31 +76,45 @@ class SpotifyDataLoader:
         return self.X_features
     
     def prepare_training_data(self):
-        """Prepare data for training and recommendation testing"""
+        """Prepare data for training, validation, and recommendation testing"""
         # Get track IDs
         self.track_ids = self.df['track_id'].values
         
         # Convert to numpy arrays
         X = self.X_features.values
         
-        # Split data: 80% for training, 20% for recommendation testing
-        X_train, X_test = train_test_split(
+        # First split: 80% for training+validation, 20% for final testing
+        X_train_val, X_test = train_test_split(
             X, 
             test_size=0.2, 
             random_state=42
         )
         
+        # Second split: Split the 80% into 64% training, 16% validation
+        X_train, X_val = train_test_split(
+            X_train_val,
+            test_size=0.2,  # 20% of 80% = 16% of total
+            random_state=42
+        )
+        
         # Also split the track IDs to keep track of which songs are in which set
-        track_ids_train, track_ids_test = train_test_split(
+        track_ids_train_val, track_ids_test = train_test_split(
             self.track_ids,
             test_size=0.2,
             random_state=42
         )
         
-        print(f"Training set: {X_train.shape}")
-        print(f"Recommendation testing set: {X_test.shape}")
+        track_ids_train, track_ids_val = train_test_split(
+            track_ids_train_val,
+            test_size=0.2,
+            random_state=42
+        )
         
-        return X_train, X_test, X, self.track_ids, track_ids_train, track_ids_test
+        print(f"Training set: {X_train.shape} (64% of total)")
+        print(f"Validation set: {X_val.shape} (16% of total)")
+        print(f"Test set: {X_test.shape} (20% of total)")
+        
+        return X_train, X_val, X_test, X, self.track_ids, track_ids_train, track_ids_val, track_ids_test
     
     def get_scalers(self):
         """Get the fitted scalers for later use"""
