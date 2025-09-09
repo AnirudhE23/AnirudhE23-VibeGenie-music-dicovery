@@ -70,8 +70,8 @@ A comprehensive Streamlit application for collecting Spotify user data and provi
 ### 2. **Installation**
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd spotify-music-recommendation
+git clone https://github.com/AnirudhE23/VibeGenie-music-dicovery.git
+cd VibeGenie-music-dicovery
 
 # Create virtual environment (recommended)
 python -m venv venv
