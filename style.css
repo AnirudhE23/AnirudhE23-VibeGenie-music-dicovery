@@ -1,0 +1,614 @@
+/* Modern Music Recommender Styling */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Root variables for consistent theming */
+:root {
+    --primary-color: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary-color: #1db954;
+    --accent-color: #f59e0b;
+    --bg-primary: #0f0f23;
+    --bg-secondary: #1a1a2e;
+    --bg-tertiary: #16213e;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --border-color: #374151;
+    --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    --gradient-secondary: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+    --gradient-bg: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Global styles */
+/* Subtle Background Elements */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(29, 185, 84, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.stApp {
+    background: #000000; /*var(--gradient-bg) */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-primary);
+}
+
+/* Grid pattern removed for cleaner look */
+
+/* Streamlit branding and navigation elements are now visible */
+
+/* Hero content styles */
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 700;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    z-index: 1;
+    position: relative;
+}
+
+/* Typography Enhancements - Apple Style */
+
+.hero-title {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s ease-out;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    margin-bottom: 3rem;
+    max-width: 600px;
+    line-height: 1.6;
+    z-index: 1;
+    position: relative;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.hero-button-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Center the Connect with Spotify button regardless of column layout */
+.hero-button-container div[data-testid="stButton"] {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+/* Ensure the button itself is centered within its container */
+.hero-button-container div[data-testid="stButton"] button {
+    margin: 0 auto !important;
+    display: block !important;
+}
+
+.hero-button {
+    background: var(--gradient-secondary) !important;
+    border: none !important;
+    padding: 1rem 2.5rem !important;
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    border-radius: 50px !important;
+    color: white !important;
+    box-shadow: var(--shadow) !important;
+    transition: all 0.3s ease !important;
+    text-transform: none !important;
+    z-index: 1;
+    position: relative;
+    cursor: pointer;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.hero-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-lg) !important;
+    background: linear-gradient(135deg, #1ed760 0%, #1db954 100%) !important;
+}
+
+/* Style the Streamlit button to match the hero design - smaller size */
+div[data-testid="stButton"] button {
+    background: var(--gradient-secondary) !important;
+    border: none !important;
+    padding: 0.75rem 2rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 50px !important;
+    color: white !important;
+    box-shadow: var(--shadow) !important;
+    transition: all 0.3s ease !important;
+    text-transform: none !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    width: 100% !important;
+}
+
+/* Remove animation from all buttons except hero button */
+div[data-testid="stButton"]:not(.hero-button-container div[data-testid="stButton"]) button {
+    animation: none !important;
+}
+
+
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 4rem;
+    max-width: 1200px;
+    width: 100%;
+    z-index: 1;
+    position: relative;
+}
+
+.feature-card {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: left;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.feature-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.feature-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Add this to your existing CSS */
+
+.feature-card-with-image {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.feature-card-with-image:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.feature-content {
+    flex: 1;
+}
+
+.feature-image {
+    flex: 0 0 200px;
+}
+
+.feature-image img {
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+}
+
+/* Image Fade-in Animation */
+.stImage {
+    animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+/* Alternative for direct image styling */
+img[alt*="Model_Neural_Net"] {
+    animation: fadeInUp 1s ease-out 0.6s both;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+img[alt*="Model_Neural_Net"]:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* How it Works Section */
+.how-it-works-section {
+    margin: 4rem 0;
+    padding: 0 2rem;
+}
+
+.how-it-works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.how-it-works-card {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    animation: fadeInUp 1s ease-out;
+}
+
+.how-it-works-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.how-it-works-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.how-it-works-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.how-it-works-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.how-it-works-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.how-it-works-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.how-it-works-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Dashboard and main app styling */
+.main-header {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.metric-card {
+    background: var(--bg-tertiary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Recommendation cards */
+.recommendation-card {
+    background: var(--bg-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.recommendation-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-secondary);
+}
+
+.recommendation-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--secondary-color);
+}
+
+/* Buttons - Additional styling for non-hero buttons */
+.stButton > button:not([data-testid="stButton"]) {
+    background: var(--gradient-primary) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 500 !important;
+    color: white !important;
+    box-shadow: var(--shadow) !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton > button:not([data-testid="stButton"]):hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.stButton > button[kind="primary"]:not([data-testid="stButton"]) {
+    background: var(--gradient-secondary) !important;
+}
+
+
+
+/* Sidebar styling */
+.css-1d391kg {
+    background: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+.css-1cypcdb {
+    background: transparent !important;
+}
+
+/* Input fields */
+.stTextInput > div > div > input,
+.stSelectbox > div > div > select,
+.stNumberInput > div > div > input {
+    background: var(--bg-tertiary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    color: var(--text-primary) !important;
+    padding: 0.75rem !important;
+}
+
+/* Data frames */
+.stDataFrame {
+    background: var(--bg-secondary) !important;
+    border-radius: 15px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+/* Metrics */
+.metric-container {
+    background: var(--bg-tertiary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+/* Success/Error messages */
+.stSuccess {
+    background: rgba(29, 185, 84, 0.1) !important;
+    border: 1px solid var(--secondary-color) !important;
+    border-radius: 10px !important;
+    color: var(--secondary-color) !important;
+}
+
+.stError {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border: 1px solid #ef4444 !important;
+    border-radius: 10px !important;
+    color: #ef4444 !important;
+}
+
+.stWarning {
+    background: rgba(245, 158, 11, 0.1) !important;
+    border: 1px solid var(--accent-color) !important;
+    border-radius: 10px !important;
+    color: var(--accent-color) !important;
+}
+
+/* Navigation */
+.stNavigation {
+    background: var(--bg-secondary) !important;
+    border-radius: 15px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+/* Logout button responsive styling */
+div[data-testid="stButton"] button[kind="secondary"] {
+    min-width: 120px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Ensure logout button maintains proper shape on all devices */
+button[data-testid="baseButton-secondary"] {
+    min-width: 120px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    white-space: nowrap !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .feature-grid {
+        grid-template-columns: 1fr;
+        margin-top: 2rem;
+    }
+    
+    .landing-container {
+        padding: 1rem;
+    }
+    
+    /* Ensure logout button stays rectangular on mobile */
+    div[data-testid="stButton"] button[kind="secondary"] {
+        min-width: 100px !important;
+        height: 36px !important;
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+    
+    button[data-testid="baseButton-secondary"] {
+        min-width: 100px !important;
+        height: 36px !important;
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Loading spinner */
+.stSpinner > div {
+    border-top-color: var(--primary-color) !important;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1rem;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.75rem 1.5rem;
+}
+
+.stTabs [aria-selected="true"] {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hero Button Container - behaves like feature cards */
+.hero-button-container {
+    animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.hero-button-container div[data-testid="stButton"] button {
+    /* No additional animation - inherits from container */
+    transition: all 0.3s ease !important;
+}
+
+.hero-button-container div[data-testid="stButton"] button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-lg) !important;
+    background: linear-gradient(135deg, #1ed760 0%, #1db954 100%) !important;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: var(--shadow);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+    }
+    100% {
+        box-shadow: var(--shadow);
+    }
+}

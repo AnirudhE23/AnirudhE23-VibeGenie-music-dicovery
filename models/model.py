@@ -551,7 +551,181 @@ class MusicRecommender:
             'original_index': idx  # Store for diversity calculations
         }
 
+    def analyze_user_music_taste(self, user_track_features):
+        """
+        Analyze user's music to identify different mood clusters and listening patterns
+        
+        Args:
+            user_track_features (pd.DataFrame): User's track features
             
+        Returns:
+            dict: Analysis results with mood clusters and statistics
+        """
+        # Debug information
+        print(f"DEBUG: analyze_user_music_taste called with type: {type(user_track_features)}")
+        print(f"DEBUG: user_track_features shape: {getattr(user_track_features, 'shape', 'No shape attribute')}")
+        print(f"DEBUG: user_track_features columns: {getattr(user_track_features, 'columns', 'No columns attribute')}")
+        
+        # Handle case where user_track_features might be a Series or single row
+        if hasattr(user_track_features, 'empty') and user_track_features.empty:
+            print("DEBUG: user_track_features is empty")
+            return None
+        
+        # Convert to DataFrame if it's a Series
+        if hasattr(user_track_features, 'iloc') and len(user_track_features.shape) == 1:
+            # It's a Series, convert to DataFrame
+            print("DEBUG: Converting Series to DataFrame")
+            df = user_track_features.to_frame().T
+        else:
+            # It's already a DataFrame
+            print("DEBUG: Using as DataFrame")
+            df = user_track_features.copy()
+        
+        print(f"DEBUG: Final df shape: {df.shape}")
+        print(f"DEBUG: Final df columns: {list(df.columns)}")
+        
+        # Ensure we have the required columns
+        required_cols = ['energy', 'danceability', 'valence', 'acousticness', 'instrumentalness']
+        available_cols = [col for col in required_cols if col in df.columns]
+        
+        print(f"DEBUG: Available columns: {available_cols}")
+        
+        if len(available_cols) < 3:
+            print("DEBUG: Not enough available columns")
+            return None
+            
+        # Categorize tracks into mood clusters
+        mood_clusters = self._categorize_tracks_by_mood(df)
+        
+        # Calculate statistics for each mood
+        mood_stats = self._calculate_mood_statistics(df, mood_clusters)
+        
+        # Identify dominant listening patterns
+        listening_patterns = self._identify_listening_patterns(mood_stats)
+        
+        return {
+            'mood_clusters': mood_clusters,
+            'mood_statistics': mood_stats,
+            'listening_patterns': listening_patterns,
+            'total_tracks': len(df),
+            'tracks_with_features': len(df.dropna(subset=available_cols))
+        }
+    
+    def _categorize_tracks_by_mood(self, df):
+        """
+        Categorize tracks into mood clusters based on audio features
+        """
+        moods = []
+        
+        for idx, row in df.iterrows():
+            mood = self._determine_track_mood(row)
+            moods.append(mood)
+            
+        return moods
+    
+    def _determine_track_mood(self, track_row):
+        """
+        Determine the mood of a single track based on audio features
+        """
+        # Get feature values with defaults
+        energy = track_row.get('energy', 0.5)
+        danceability = track_row.get('danceability', 0.5)
+        valence = track_row.get('valence', 0.5)
+        acousticness = track_row.get('acousticness', 0.5)
+        instrumentalness = track_row.get('instrumentalness', 0.5)
+        
+        # High Energy: High energy + high danceability
+        if energy > 0.7 and danceability > 0.6:
+            return 'High Energy'
+        
+        # Chill: Low energy + high acousticness + positive valence
+        elif energy < 0.4 and acousticness > 0.4 and valence > 0.5:
+            return 'Chill'
+        
+        # Focus: Low energy + high instrumentalness + low danceability
+        elif energy < 0.5 and instrumentalness > 0.3 and danceability < 0.5:
+            return 'Focus'
+        
+        # Emotional: Low valence + high acousticness
+        elif valence < 0.3 and acousticness > 0.3:
+            return 'Emotional'
+        
+        # Party: High energy + high valence + high danceability
+        elif energy > 0.6 and valence > 0.6 and danceability > 0.7:
+            return 'Party'
+        
+        # Default to Medium Energy
+        else:
+            return 'Medium Energy'
+    
+    def _calculate_mood_statistics(self, df, mood_clusters):
+        """
+        Calculate statistics for each mood cluster
+        """
+        df_with_moods = df.copy()
+        df_with_moods['mood'] = mood_clusters
+        
+        mood_stats = {}
+        unique_moods = list(set(mood_clusters))
+        
+        for mood in unique_moods:
+            mood_tracks = df_with_moods[df_with_moods['mood'] == mood]
+            
+            if len(mood_tracks) > 0:
+                mood_stats[mood] = {
+                    'count': len(mood_tracks),
+                    'percentage': (len(mood_tracks) / len(df)) * 100,
+                    'avg_energy': mood_tracks['energy'].mean() if 'energy' in mood_tracks.columns else 0,
+                    'avg_valence': mood_tracks['valence'].mean() if 'valence' in mood_tracks.columns else 0,
+                    'avg_danceability': mood_tracks['danceability'].mean() if 'danceability' in mood_tracks.columns else 0,
+                    'avg_acousticness': mood_tracks['acousticness'].mean() if 'acousticness' in mood_tracks.columns else 0,
+                    'sample_tracks': mood_tracks[['Track Name', 'Artist(s)']].head(3).to_dict('records') if 'Track Name' in mood_tracks.columns else []
+                }
+        
+        return mood_stats
+    
+    def _identify_listening_patterns(self, mood_stats):
+        """
+        Identify the user's dominant listening patterns
+        """
+        if not mood_stats:
+            return []
+            
+        # Sort moods by percentage
+        sorted_moods = sorted(mood_stats.items(), key=lambda x: x[1]['percentage'], reverse=True)
+        
+        patterns = []
+        
+        # Primary pattern (most common)
+        if sorted_moods:
+            primary_mood, primary_stats = sorted_moods[0]
+            patterns.append({
+                'type': 'Primary',
+                'mood': primary_mood,
+                'percentage': primary_stats['percentage'],
+                'description': f"You primarily listen to {primary_mood.lower()} music ({primary_stats['percentage']:.1f}%)"
+            })
+        
+        # Secondary pattern (if significant)
+        if len(sorted_moods) > 1 and sorted_moods[1][1]['percentage'] > 15:
+            secondary_mood, secondary_stats = sorted_moods[1]
+            patterns.append({
+                'type': 'Secondary',
+                'mood': secondary_mood,
+                'percentage': secondary_stats['percentage'],
+                'description': f"You also enjoy {secondary_mood.lower()} music ({secondary_stats['percentage']:.1f}%)"
+            })
+        
+        # Diversity indicator
+        high_diversity = len([m for m in mood_stats.values() if m['percentage'] > 10]) >= 3
+        patterns.append({
+            'type': 'Diversity',
+            'mood': 'Mixed',
+            'percentage': 0,
+            'description': "You have diverse music taste" if high_diversity else "You have focused music taste"
+        })
+        
+        return patterns  
 
 
 

@@ -1,0 +1,526 @@
+{
+  "timestamp": "2025-09-04T11:14:08.906863",
+  "test_summary": {
+    "total_users_tested": 12,
+    "successful_tests": 12,
+    "failed_tests": 0,
+    "genres_tested": [
+      "rock",
+      "pop",
+      "electronic",
+      "classical",
+      "jazz",
+      "hip_hop",
+      "country",
+      "blues"
+    ],
+    "mixed_users_tested": [
+      "rock_pop",
+      "electronic_hip_hop",
+      "jazz_blues",
+      "classical_jazz"
+    ]
+  },
+  "user_results": {
+    "rock": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8284147",
+      "min_similarity": "0.8227445",
+      "max_similarity": "0.8422855",
+      "avg_popularity": 64.53333333333333,
+      "similarity_std": "0.005596112",
+      "top_3_recommendations": [
+        {
+          "track_name": "Mistaken (feat. Alex Aris)",
+          "artists": "Martin Garrix",
+          "similarity": "0.8422855",
+          "popularity": "75"
+        },
+        {
+          "track_name": "Stick to the Models",
+          "artists": "Future",
+          "similarity": "0.83674043",
+          "popularity": "66"
+        },
+        {
+          "track_name": "Legends Never Die",
+          "artists": "League of Legends, Against The Current",
+          "similarity": "0.83398116",
+          "popularity": "74"
+        }
+      ]
+    },
+    "pop": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8881354",
+      "min_similarity": "0.87840414",
+      "max_similarity": "0.9163753",
+      "avg_popularity": 68.66666666666667,
+      "similarity_std": "0.00987381",
+      "top_3_recommendations": [
+        {
+          "track_name": "BLACKJACK (feat. YBN Cordae) - Remix",
+          "artists": "Amin\u00e9",
+          "similarity": "0.9163753",
+          "popularity": "67"
+        },
+        {
+          "track_name": "Like Mike (feat. Jay Critch & A Boogie wit da Hoodie)",
+          "artists": "Rich The Kid",
+          "similarity": "0.89964134",
+          "popularity": "76"
+        },
+        {
+          "track_name": "Din Din Din (Participa\u00e7\u00e3o especial de MC Pupio e MC Doguinha)",
+          "artists": "Ludmilla",
+          "similarity": "0.896961",
+          "popularity": "65"
+        }
+      ]
+    },
+    "electronic": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8229585",
+      "min_similarity": "0.8108235",
+      "max_similarity": "0.84939533",
+      "avg_popularity": 32.0,
+      "similarity_std": "0.01210224",
+      "top_3_recommendations": [
+        {
+          "track_name": "Sinistro",
+          "artists": "DJ Nigga Fox",
+          "similarity": "0.84939533",
+          "popularity": "12"
+        },
+        {
+          "track_name": "Sucer la bite",
+          "artists": "Lorenzo",
+          "similarity": "0.84127855",
+          "popularity": "47"
+        },
+        {
+          "track_name": "In My View",
+          "artists": "Young Fathers",
+          "similarity": "0.8409052",
+          "popularity": "53"
+        }
+      ]
+    },
+    "classical": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8870955",
+      "min_similarity": "0.8759692",
+      "max_similarity": "0.9180523",
+      "avg_popularity": 28.6,
+      "similarity_std": "0.012668741",
+      "top_3_recommendations": [
+        {
+          "track_name": "Leavin'",
+          "artists": "Brenky",
+          "similarity": "0.9180523",
+          "popularity": "51"
+        },
+        {
+          "track_name": "Carmen: Overture",
+          "artists": "Georges Bizet, The City of Prague Philharmonic Orchestra, Friedmann Riehle",
+          "similarity": "0.9139953",
+          "popularity": "41"
+        },
+        {
+          "track_name": "Symphony No. 9 Op. 95 \"New World Symphony\" IV. Allegro Con Fuoco",
+          "artists": "Anton\u00edn Dvo\u0159\u00e1k, The City of Prague Philharmonic Orchestra, Richard Hein",
+          "similarity": "0.8935405",
+          "popularity": "37"
+        }
+      ]
+    },
+    "jazz": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8836956",
+      "min_similarity": "0.8739316",
+      "max_similarity": "0.9084049",
+      "avg_popularity": 27.8,
+      "similarity_std": "0.010315252",
+      "top_3_recommendations": [
+        {
+          "track_name": "Peaks",
+          "artists": "Fyfe",
+          "similarity": "0.9084049",
+          "popularity": "18"
+        },
+        {
+          "track_name": "Interbeing",
+          "artists": "The Glitch Mob",
+          "similarity": "0.89802754",
+          "popularity": "38"
+        },
+        {
+          "track_name": "Stardust",
+          "artists": "Unreqvited",
+          "similarity": "0.89555264",
+          "popularity": "22"
+        }
+      ]
+    },
+    "hip_hop": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.813147",
+      "min_similarity": "0.801451",
+      "max_similarity": "0.83435714",
+      "avg_popularity": 60.06666666666667,
+      "similarity_std": "0.009826102",
+      "top_3_recommendations": [
+        {
+          "track_name": "Outside",
+          "artists": "MorMor",
+          "similarity": "0.83435714",
+          "popularity": "60"
+        },
+        {
+          "track_name": "Jaded",
+          "artists": "EDX",
+          "similarity": "0.8290302",
+          "popularity": "52"
+        },
+        {
+          "track_name": "Like a Virgin",
+          "artists": "M\u00f6tley Cr\u00fce",
+          "similarity": "0.8271731",
+          "popularity": "62"
+        }
+      ]
+    },
+    "country": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8078446",
+      "min_similarity": "0.7990204",
+      "max_similarity": "0.8331739",
+      "avg_popularity": 58.86666666666667,
+      "similarity_std": "0.011270678",
+      "top_3_recommendations": [
+        {
+          "track_name": "Una Vez Mas",
+          "artists": "Fuerza Regida",
+          "similarity": "0.8331739",
+          "popularity": "55"
+        },
+        {
+          "track_name": "Disculpe Usted",
+          "artists": "Fuerza Regida",
+          "similarity": "0.8300845",
+          "popularity": "58"
+        },
+        {
+          "track_name": "Love Hard, Fall Fast",
+          "artists": "Flyboy Tarantino",
+          "similarity": "0.82622993",
+          "popularity": "65"
+        }
+      ]
+    },
+    "blues": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8485247",
+      "min_similarity": "0.83378357",
+      "max_similarity": "0.87175983",
+      "avg_popularity": 30.466666666666665,
+      "similarity_std": "0.010923695",
+      "top_3_recommendations": [
+        {
+          "track_name": "Cysawd Yr Haul",
+          "artists": "Serol Serol",
+          "similarity": "0.87175983",
+          "popularity": "9"
+        },
+        {
+          "track_name": "time for tea",
+          "artists": "mt. fujitive",
+          "similarity": "0.8669823",
+          "popularity": "31"
+        },
+        {
+          "track_name": "Mr. Scientist",
+          "artists": "The Magic Beans",
+          "similarity": "0.8579056",
+          "popularity": "31"
+        }
+      ]
+    },
+    "rock_pop": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8782848",
+      "min_similarity": "0.8641125",
+      "max_similarity": "0.8981819",
+      "avg_popularity": 66.0,
+      "similarity_std": "0.0097824065",
+      "top_3_recommendations": [
+        {
+          "track_name": "Giovane fuoriclasse",
+          "artists": "Capo Plaza",
+          "similarity": "0.8981819",
+          "popularity": "60"
+        },
+        {
+          "track_name": "How Did I Get Here (feat. J. Cole)",
+          "artists": "Offset",
+          "similarity": "0.89008933",
+          "popularity": "79"
+        },
+        {
+          "track_name": "\u4f60\u8981\u7684\u5168\u62ff\u8d70",
+          "artists": "Tiger Hu",
+          "similarity": "0.886834",
+          "popularity": "67"
+        }
+      ]
+    },
+    "electronic_hip_hop": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8285759",
+      "min_similarity": "0.8199568",
+      "max_similarity": "0.8445823",
+      "avg_popularity": 38.733333333333334,
+      "similarity_std": "0.0076319873",
+      "top_3_recommendations": [
+        {
+          "track_name": "Bang",
+          "artists": "Jordan Comolli",
+          "similarity": "0.8445823",
+          "popularity": "23"
+        },
+        {
+          "track_name": "Bout Shit",
+          "artists": "Lud Foe",
+          "similarity": "0.84169793",
+          "popularity": "43"
+        },
+        {
+          "track_name": "North Nights",
+          "artists": "slowthai",
+          "similarity": "0.83602285",
+          "popularity": "50"
+        }
+      ]
+    },
+    "jazz_blues": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.86619306",
+      "min_similarity": "0.85585856",
+      "max_similarity": "0.89383936",
+      "avg_popularity": 36.733333333333334,
+      "similarity_std": "0.010638853",
+      "top_3_recommendations": [
+        {
+          "track_name": "Over and Out",
+          "artists": "Nine Inch Nails",
+          "similarity": "0.89383936",
+          "popularity": "40"
+        },
+        {
+          "track_name": "Interbeing",
+          "artists": "The Glitch Mob",
+          "similarity": "0.8799109",
+          "popularity": "38"
+        },
+        {
+          "track_name": "Resurrections",
+          "artists": "Lena Raine",
+          "similarity": "0.8736441",
+          "popularity": "49"
+        }
+      ]
+    },
+    "classical_jazz": {
+      "num_recommendations": 15,
+      "avg_similarity": "0.8876483",
+      "min_similarity": "0.88059944",
+      "max_similarity": "0.90015495",
+      "avg_popularity": 30.466666666666665,
+      "similarity_std": "0.0055278526",
+      "top_3_recommendations": [
+        {
+          "track_name": "Building a Hut",
+          "artists": "The Relaxation Principle",
+          "similarity": "0.90015495",
+          "popularity": "36"
+        },
+        {
+          "track_name": "Carmen: Overture",
+          "artists": "Georges Bizet, The City of Prague Philharmonic Orchestra, Friedmann Riehle",
+          "similarity": "0.89803183",
+          "popularity": "41"
+        },
+        {
+          "track_name": "Green Was Beautiful",
+          "artists": "The New Mastersounds",
+          "similarity": "0.8925901",
+          "popularity": "24"
+        }
+      ]
+    }
+  },
+  "diversity_analysis": {
+    "rock_vs_pop": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "rock_vs_electronic": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "rock_vs_classical": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "rock_vs_jazz": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "rock_vs_hip_hop": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "rock_vs_country": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "rock_vs_blues": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "pop_vs_electronic": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "pop_vs_classical": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "pop_vs_jazz": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "pop_vs_hip_hop": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "pop_vs_country": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "pop_vs_blues": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "electronic_vs_classical": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "electronic_vs_jazz": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "electronic_vs_hip_hop": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "electronic_vs_country": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "electronic_vs_blues": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "classical_vs_jazz": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "classical_vs_hip_hop": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "classical_vs_country": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "classical_vs_blues": {
+      "overlap_ratio": 0.07142857142857142,
+      "overlap_count": 2,
+      "total_unique": 28
+    },
+    "jazz_vs_hip_hop": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "jazz_vs_country": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "jazz_vs_blues": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "hip_hop_vs_country": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "hip_hop_vs_blues": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    },
+    "country_vs_blues": {
+      "overlap_ratio": 0.0,
+      "overlap_count": 0,
+      "total_unique": 30
+    }
+  },
+  "edge_case_results": {
+    "minimal_tracks": {
+      "success": true,
+      "error": null,
+      "num_recommendations": 10
+    },
+    "many_recommendations": {
+      "success": true,
+      "error": null,
+      "num_recommendations": 50
+    },
+    "mixed_genre": {
+      "success": true,
+      "error": null,
+      "num_recommendations": 15
+    }
+  },
+  "recommendations": {
+    "system_ready": true,
+    "diversity_good": true,
+    "edge_cases_handled": true
+  }
+}
