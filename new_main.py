@@ -119,21 +119,21 @@ def show_landing_page():
         <h2 style="text-align: center; color: var(--text-primary); margin-bottom: 2rem; font-size: 2rem; font-weight: 600;">How it Works</h2>
         <div class="how-it-works-grid">
             <div class="how-it-works-card">
-                <div class="how-it-works-icon">1️⃣</div>
+                <div class="how-it-works-icon">🔌</div>
                 <h3 class="how-it-works-title">Connect</h3>
                 <p class="how-it-works-description">
                     Connect your Spotify account securely to access your music library and preferences.
                 </p>
             </div>
             <div class="how-it-works-card">
-                <div class="how-it-works-icon">2️⃣</div>
+                <div class="how-it-works-icon">🔍</div>
                 <h3 class="how-it-works-title">Analyze</h3>
                 <p class="how-it-works-description">
                     Our AI analyzes your music taste using advanced machine learning algorithms.
                 </p>
             </div>
             <div class="how-it-works-card">
-                <div class="how-it-works-icon">3️⃣</div>
+                <div class="how-it-works-icon">✨</div>
                 <h3 class="how-it-works-title">Discover</h3>
                 <p class="how-it-works-description">
                     Get personalized recommendations for songs you'll love, tailored just for you.
@@ -375,11 +375,11 @@ def show_Music_recommendations():
                 # Show listening patterns
                 for pattern in taste_analysis['listening_patterns']:
                     if pattern['type'] == 'Primary':
-                        st.success(f"�� **Primary Taste**: {pattern['description']}")
+                        st.success(f"🥇 **Primary Taste**: {pattern['description']}")
                     elif pattern['type'] == 'Secondary':
-                        st.info(f"🎵 **Secondary Taste**: {pattern['description']}")
+                        st.info(f"🥈 **Secondary Taste**: {pattern['description']}")
                     else:
-                        st.info(f"🌈 **Diversity**: {pattern['description']}")
+                        st.info(f"↔️ **Diversity**: {pattern['description']}")
                 
                 # Display mood breakdown in cards
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -569,22 +569,7 @@ def show_Music_recommendations():
                                 by {rec['artists']}
                             </p>
                             {source_info}
-                        </div>
-                        <div style="display: flex; gap: 2rem; align-items: center;">
-                            <div style="text-align: center;">
-                                <div style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">
-                                    {rec['similarity_score']:.3f}
-                                </div>
-                                <div style="color: var(--text-muted); font-size: 0.9rem;">Similarity</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="color: var(--secondary-color); font-weight: 600; font-size: 1.1rem;">
-                                    {rec['popularity']}
-                                </div>
-                                <div style="color: var(--text-muted); font-size: 0.9rem;">Popularity</div>
-                            </div>
-                        </div>
-                    </div>
+                        
                 </div>
                 """, unsafe_allow_html=True)
                         
@@ -731,11 +716,6 @@ def show_Music_recommendations():
             st.info(f"📊 Showing {len(top_user_tracks)} tracks from your top tracks.")
         else:
             st.warning("Could not find track display columns in the data.")
-
-
-        # Show user profile analysis
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.subheader("📊 Your Music Profile Analysis")
         
         # Analyze user's music characteristics
         try:
@@ -747,25 +727,7 @@ def show_Music_recommendations():
                 avg_valence = tracks_with_features['valence'].mean() if 'valence' in tracks_with_features.columns else 0
                 avg_popularity = tracks_with_features['Popularity'].mean() if 'Popularity' in tracks_with_features.columns else 0
                 
-                # Create profile visualization
-                col1, col2, col3, col4 = st.columns(4)
-                
-                with col1:
-                    st.metric("Average Energy", f"{avg_energy:.2f}", 
-                             help="Energy level of your music (0.0 = low energy, 1.0 = high energy)")
-                
-                with col2:
-                    st.metric("Average Danceability", f"{avg_danceability:.2f}",
-                             help="How danceable your music is (0.0 = not danceable, 1.0 = very danceable)")
-                
-                with col3:
-                    st.metric("Average Valence", f"{avg_valence:.2f}",
-                             help="Musical positivity (0.0 = negative/sad, 1.0 = positive/happy)")
-                
-                with col4:
-                    st.metric("Average Popularity", f"{avg_popularity:.1f}",
-                             help="Popularity of your tracks (0-100)")
-                
+                                
                 # Music style description
                 style_description = []
                 if avg_energy > 0.7:
@@ -786,11 +748,6 @@ def show_Music_recommendations():
                 if style_description:
                     st.info(f"🎵 **Your Music Style**: {', '.join(style_description)}")
                 
-                # Show if model is using these characteristics
-                if st.session_state.current_recommendations:
-                    st.success("✅ **Model Status**: Your recommendations are based on these characteristics!")
-                else:
-                    st.warning("⚠️ **Model Status**: Generate recommendations to see how the model uses your music profile.")
                     
         except Exception as e:
             st.warning(f"Could not analyze music profile: {e}")
@@ -801,58 +758,6 @@ def show_Music_recommendations():
     except Exception as e:
         st.error(f"Error loading user data: {e}")
 
-# ... (keep all other existing functions like show_debug_tools, show_settings, etc.) ...
-
-def show_debug_tools(sp):
-    """Show debugging tools."""
-    st.header("🔧 Debug Tools")
-    
-    st.subheader("Test Individual Song")
-    if st.button("Test Danger Zone"):
-        # Test the find_recco_id_from_artist function directly
-        recco_id = reccobeats_utils.find_recco_id_from_artist(
-            spotify_id="test",
-            artist_name="Kenny Loggins", 
-            track_name="Danger Zone"
-        )
-        if recco_id:
-            st.success(f"Found Reccobeats ID: {recco_id}")
-            # Get features
-            features = reccobeats_utils.get_features_from_reccoid(recco_id, "test")
-            if features is not None:
-                st.write("Audio Features:", features)
-            else:
-                st.error("Could not fetch features")
-        else:
-            st.error("Could not find Reccobeats ID for Danger Zone")
-    
-    st.subheader("Cache Information")
-    try:
-        cache_df = data_collection.load_features_cache()
-        if not cache_df.empty:
-            st.write(f"Cache contains {len(cache_df)} tracks")
-            st.dataframe(cache_df.head(5))
-        else:
-            st.write("Cache is empty")
-    except Exception as e:
-        st.error(f"Error loading cache: {e}")
-
-def show_settings(user_cache):
-    """Show settings and configuration."""
-    st.header("⚙️ Settings")
-    
-    st.subheader("Configuration")
-    st.write(f"Client ID: {config.CLIENT_ID[:10]}..." if config.CLIENT_ID else "Not set")
-    st.write(f"Redirect URI: {config.REDIRECT_URI}")
-    st.write(f"Scope: {config.SCOPE}")
-    
-    st.subheader("Cache Management")
-    if st.button("Clear Features Cache"):
-        try:
-            data_collection.save_features_cache(pd.DataFrame())
-            st.success("Cache cleared successfully!")
-        except Exception as e:
-            st.error(f"Error clearing cache: {e}")
 
 # Define page wrapper functions for st.navigation
 def dashboard_page():
@@ -879,17 +784,6 @@ def recommendations_page():
         show_Music_recommendations()
     else:
         st.warning("Please authenticate with Spotify first.")
-
-def debug_tools_page():
-    """Debug tools page."""
-    if st.session_state.authenticated:
-        show_debug_tools(st.session_state.sp)
-    else:
-        st.warning("Please authenticate with Spotify first.")
-
-def settings_page():
-    """Settings page."""
-    show_settings(st.session_state.user_cache)
 
 # Define navigation structure
 pages = [

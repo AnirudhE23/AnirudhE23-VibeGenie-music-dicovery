@@ -307,10 +307,6 @@ img[alt*="Model_Neural_Net"]:hover {
 .how-it-works-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .how-it-works-title {
