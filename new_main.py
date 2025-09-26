@@ -6,8 +6,9 @@ import spotify_utils
 import reccobeats_utils
 import config
 from recommendation_system import recommendation_engine
-import dataset_expansion
 import os
+from database import db
+import database_expansion
 
 # Page configuration
 st.set_page_config(
@@ -217,9 +218,9 @@ def show_collect_data(sp):
         if st.button("🚀 Collect All User Data", type="primary", use_container_width=True):
             with st.spinner("Analyzing your Spotify library..."):
                 try:
-                    df = data_collection.collect_user_tracks(sp)
-                    st.success(f"Successfully collected {len(df)} tracks!")
-                    st.session_state.last_collection = df
+                    # This now stores directly in database
+                    tracks = data_collection.collect_user_tracks(sp)
+                    st.session_state.last_collection = tracks
                 except Exception as e:
                     st.error(f"Error collecting data: {e}")
     
@@ -227,8 +228,8 @@ def show_collect_data(sp):
         if st.button("📝 Collect Playlist Data Only", use_container_width=True):
             with st.spinner("Collecting playlist data..."):
                 try:
-                    df = data_collection.collect_playlist_data(sp)
-                    st.success(f"Successfully collected {len(df)} playlist tracks!")
+                    # You can create a similar function for playlists only
+                    tracks = data_collection.collect_playlist_data(sp)
                 except Exception as e:
                     st.error(f"Error collecting playlist data: {e}")
 
@@ -236,57 +237,65 @@ def show_view_data():
     """Show collected data."""
     st.markdown("# 📊 Your Music Data")
     
-    # Check for saved files
-    try:
-        user_tracks_df = pd.read_csv(config.USER_TRACKS_CSV, index_col=0)
+    # Get user info
+    if st.session_state.authenticated and st.session_state.sp:
+        user = st.session_state.sp.current_user()
+        spotify_user_id = user['id']
         
-        # Show basic stats in cards
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3 style="color: var(--primary-color); margin: 0;">Total Tracks</h3>
-                <h1 style="margin: 0.5rem 0;">{len(user_tracks_df)}</h1>
-            </div>
-            """, unsafe_allow_html=True)
+        # Get user's tracks from database
+        user_tracks_df = db.get_user_tracks_with_features(spotify_user_id)
         
-        with col2:
-            tracks_with_features = user_tracks_df.dropna(subset=['danceability']).shape[0]
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3 style="color: var(--secondary-color); margin: 0;">With Features</h3>
-                <h1 style="margin: 0.5rem 0;">{tracks_with_features}</h1>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            unique_playlists = user_tracks_df['Playlist Name'].nunique()
-            st.markdown(f"""
-            <div class="metric-card">
-                <h3 style="color: var(--accent-color); margin: 0;">Playlists</h3>
-                <h1 style="margin: 0.5rem 0;">{unique_playlists}</h1>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # Show data preview
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.subheader("📋 Data Preview")
-        st.dataframe(user_tracks_df.head(10), use_container_width=True)
-        
-        # Download button
-        csv = user_tracks_df.to_csv(index=False)
-        st.download_button(
-            label="📥 Download CSV",
-            data=csv,
-            file_name="spotify_user_tracks.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-        
-    except FileNotFoundError:
-        st.warning("No data found. Please collect data first.")
-    except Exception as e:
-        st.error(f"Error loading data: {e}")
+        if len(user_tracks_df) > 0:
+            # Show basic stats in cards
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f"""
+                <div class="metric-card">
+                    <h3 style="color: var(--primary-color); margin: 0;">Your Tracks</h3>
+                    <h1 style="margin: 0.5rem 0;">{len(user_tracks_df)}</h1>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                tracks_with_features = user_tracks_df.dropna(subset=['acousticness']).shape[0]
+                st.markdown(f"""
+                <div class="metric-card">
+                    <h3 style="color: var(--secondary-color); margin: 0;">With Features</h3>
+                    <h1 style="margin: 0.5rem 0;">{tracks_with_features}</h1>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                unique_playlists = user_tracks_df['playlist_name'].nunique()
+                st.markdown(f"""
+                <div class="metric-card">
+                    <h3 style="color: var(--accent-color); margin: 0;">Playlists</h3>
+                    <h1 style="margin: 0.5rem 0;">{unique_playlists}</h1>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Show data preview
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.subheader("📋 Your Tracks Preview")
+            st.dataframe(user_tracks_df.head(10), use_container_width=True)
+            
+            # Show database stats
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.subheader("🗄️ Database Statistics")
+            db_stats = db.get_database_stats()
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Songs in Database", f"{db_stats.get('total_tracks', 0):,}")
+            with col2:
+                st.metric("Total Users", f"{db_stats.get('total_users', 0):,}")
+            with col3:
+                st.metric("Total User Tracks", f"{db_stats.get('total_user_tracks', 0):,}")
+            
+        else:
+            st.warning("No data found. Please collect data first.")
+    else:
+        st.warning("Please authenticate with Spotify first.")
 
 def show_Music_recommendations():
     """Show Music recommendations with enhanced styling."""
@@ -508,12 +517,21 @@ def show_Music_recommendations():
                     })
                     
                     # Pass preferences to recommendation engine
-                    recommendations, error = recommendation_engine.get_recommendations(
-                        user_tracks_df, 
-                        n_recommendations, 
-                        quick_mode=quick_mode,
-                        user_preferences=preferences  # NEW: Pass preferences
-                    )
+                    # Get user's Spotify ID
+                    if st.session_state.authenticated and st.session_state.sp:
+                        user = st.session_state.sp.current_user()
+                        spotify_user_id = user['id']
+                        
+                        # Get recommendations using database
+                        recommendations, error = recommendation_engine.get_recommendations_for_user(
+                            spotify_user_id, 
+                            n_recommendations, 
+                            quick_mode=quick_mode,
+                            user_preferences=preferences
+                        )
+                    else:
+                        st.warning("Please authenticate with Spotify first.")
+                        return
                     
                     
                     # Step 3: Finalizing results

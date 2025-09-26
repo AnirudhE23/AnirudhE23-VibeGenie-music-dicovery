@@ -7,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import config
 import spotify_utils
 import reccobeats_utils
+from database import db
+import database_expansion
 
 CACHE_PATH = pathlib.Path(config.FEATURES_CACHE)
 
@@ -23,12 +25,18 @@ def save_features_cache(df):
 
 def collect_user_tracks(sp):
     """
-    Fetches:
-    1. Current user's playlists
-    2. Current user's liked songs
-    3. Current user's top tracks (short, medium, long term)
-    Returns a single DataFrame with audio features (Spotify + Reccobeats)
+    Fetches user tracks and stores directly in database with audio features.
+    Uses caching to avoid unnecessary API calls.
     """
+    # Get user info for database
+    user = sp.current_user()
+    spotify_user_id = user['id']
+    display_name = user.get('display_name', 'Unknown')
+    
+    # Create user in database
+    db.create_user(spotify_user_id, display_name)
+    
+    # Load features cache (keep your existing caching system)
     cache_df = load_features_cache()
     cached_ids = set(cache_df["Track ID"].unique()) if not cache_df.empty else set()
     
@@ -42,7 +50,7 @@ def collect_user_tracks(sp):
     need_ids = [tid for tid in tracks_df["Track ID"].dropna().unique().tolist() if tid not in cached_ids]
     st.write(f"Need features: {len(need_ids)}")
 
-    # Batch fetch Spotify IDs
+    # Batch fetch features for new tracks (keep your existing logic)
     if need_ids:
         batch_progress = st.progress(0, text="Fetching audio features (batch)")
         status = st.empty()
@@ -53,16 +61,17 @@ def collect_user_tracks(sp):
                 cache_df = pd.concat([cache_df, features], ignore_index=True) if not cache_df.empty else features
                 save_features_cache(cache_df)
                 st.write(f"Cached features for {len(features)} tracks (total cache: {len(cache_df)})")
-            batch_progress.progress(min((i + config.BATCH_SIZE) / len(need_ids), 1.0))
+            progress_value = min((i + config.BATCH_SIZE) / len(need_ids), 1.0)
+            batch_progress.progress(progress_value)
             status.text(f"Batch processed {min(i+config.BATCH_SIZE, len(need_ids))}/{len(need_ids)} tracks")
 
+    # Get features for all tracks (from cache + new fetches)
     features_df = cache_df.copy()
     have_ids = set(features_df["Track ID"].unique()) if not features_df.empty else set()
     remaining = tracks_df[~tracks_df["Track ID"].isin(have_ids)].copy()
 
-    # Fallback pass (artist->track walk, enhanced)
+    # Fallback pass for remaining tracks (keep your existing logic)
     if len(remaining) > 0:
-        # Sort by popularity to prioritize popular tracks first
         remaining = remaining.sort_values("Popularity", ascending=False)
         fb_progress = st.progress(0, text=f"Fallback lookups ({len(remaining)} tracks)")
         fb_status = st.empty()
@@ -70,16 +79,13 @@ def collect_user_tracks(sp):
         fallback_results = []
 
         def run_fallback(row): 
-            """Return a FEATURES DATAFRAME or None.""" 
             time.sleep(random.uniform(0.05, 0.15)) 
-            
             result = reccobeats_utils.get_reccobeats_features( 
                 track_id=row["Track ID"], 
                 track_name=row["Track Name"], 
                 artist_name=row["Artist(s)"], 
                 spotify_to_recco=spotify_to_recco
             )
-            
             return result
 
         with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as ex:
@@ -103,64 +109,106 @@ def collect_user_tracks(sp):
             fb_df = pd.concat(fallback_results, ignore_index=True)
             features_df = pd.concat([features_df, fb_df], ignore_index=True).drop_duplicates(subset=["Track ID"])
 
-    # Merge everything into final dataframe
-    final_df = pd.merge(tracks_df.drop(columns=["ISRC"]), features_df, on="Track ID", how="left")
-    final_df.to_csv(config.USER_TRACKS_CSV, index=True)
-
-    feature_cols = [c for c in features_df.columns if c != "Track ID"] if not features_df.empty else []
-    rows_with_features = final_df[feature_cols].notna().any(axis=1).sum() if feature_cols else 0
-    cached_unique = features_df["Track ID"].nunique() if not features_df.empty else 0
-
-    st.write(f"Final rows: {len(final_df)}. With features: {rows_with_features} (unique cached tracks: {cached_unique})")
+    # NEW: Store user tracks directly in database (not in tracks table)
+    st.info("Storing user tracks in database...")
+    db_progress = st.progress(0, text="Storing user tracks in database")
     
-    # Automatically clean, add user tracks, and expand training dataset
-    st.info("Cleaning training dataset and adding your tracks in background...")
+    stored_count = 0
+    for idx, row in tracks_df.iterrows():
+        try:
+            # Get features for this track
+            track_features = features_df[features_df["Track ID"] == row["Track ID"]]
+            
+            if not track_features.empty:
+                feature_row = track_features.iloc[0]
+
+                # Prepare track data for database
+                track_data = {
+                    'track_id': row['Track ID'],
+                    'track_name': row['Track Name'],
+                    'artists': row['Artist(s)'],
+                    'popularity': row.get('Popularity', 0),
+                    'acousticness': feature_row.get('acousticness'),
+                    'danceability': feature_row.get('danceability'),
+                    'energy': feature_row.get('energy'),
+                    'instrumentalness': feature_row.get('instrumentalness'),
+                    'key': feature_row.get('key_value'),
+                    'liveness': feature_row.get('liveness'),
+                    'loudness': feature_row.get('loudness'),
+                    'mode': feature_row.get('mode_value'),
+                    'speechiness': feature_row.get('speechiness'),
+                    'tempo': feature_row.get('tempo'),
+                    'valence': feature_row.get('valence')
+                }
+                
+                # Store in user_tracks table
+                success = db.add_user_track(spotify_user_id, track_data, row.get('Playlist Name', 'Unknown'))
+                if success:
+                    stored_count += 1
+                    
+        except Exception as e:
+            st.warning(f"Failed to store track {row.get('Track Name', 'Unknown')}: {e}")
+        
+        # Update progress
+        progress_value = min((idx + 1) / len(tracks_df), 1.0)
+        db_progress.progress(progress_value)
+    
+    st.success(f"✅ Stored {stored_count} user tracks in database!")
+    
+    # Database expansion (instead of CSV expansion)
+    st.info("Expanding database with diverse tracks...")
     try:
-        import dataset_expansion
-        
-        # Step 1: Clean existing training dataset (remove tracks without audio features)
-        removed_tracks = dataset_expansion.clean_training_dataset()
+        # Step 1: Clean existing tracks table (remove tracks without audio features)
+        removed_tracks = database_expansion.clean_database_tracks()
         if removed_tracks > 0:
-            st.info(f"Cleaned training dataset: removed {removed_tracks} tracks without audio features")
+            st.info(f"Cleaned database: removed {removed_tracks} tracks without audio features")
         
-        # Step 2: Add user tracks to training dataset
-        user_tracks_added = dataset_expansion.add_user_tracks_to_training_dataset(final_df)
-        if user_tracks_added > 0:
-            st.success(f"Added {user_tracks_added} of your tracks to training dataset!")
+        # Step 2: Add user tracks to tracks table (get from database with audio features)
+        user_tracks_with_features = db.get_user_tracks_with_features(spotify_user_id)
+        if not user_tracks_with_features.empty:
+            user_tracks_added = database_expansion.add_user_tracks_to_database_tracks(user_tracks_with_features)
+            if user_tracks_added > 0:
+                st.success(f"Added {user_tracks_added} of your tracks to database!")
+        else:
+            st.info("No user tracks with audio features found for expansion.")
+            user_tracks_added = 0
         
-        # Step 3: Expand training dataset with diverse tracks
-        new_tracks = dataset_expansion.expand_training_dataset_background(sp, target_size=150000)
+        # Step 3: Expand tracks table with diverse tracks
+        new_tracks = database_expansion.expand_database_tracks_background(sp, target_size=150000)
         if new_tracks > 0:
-            st.success(f"Background expansion added {new_tracks:,} new tracks to training dataset!")
+            st.success(f"Database expansion added {new_tracks:,} new tracks!")
             st.info("💡 The recommendation model now has access to a larger, more diverse pool of songs!")
         else:
-            st.info("Training dataset is already at target size.")
+            st.info("Database is already at target size.")
             
-        # Step 4: Note about recommendations and scheduled retraining
+        # Step 4: Show recommendation status
         if user_tracks_added > 0 or new_tracks > 0:
-            st.success("✅ **Great!** Your tracks have been added to the training dataset!")
+            st.success("✅ **Great!** Your tracks have been added to the database!")
             st.info("🎵 **You can now generate recommendations** - the system will use your tracks to find similar songs!")
-            st.info("💡 **Scheduled Retraining**: The model will be automatically retrained during scheduled downtimes for optimal performance")
-            
+                        
             # Show recommendation status
             st.markdown("""
             <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 15px; border: 1px solid var(--border-color); margin: 1rem 0;">
                 <h4 style="color: var(--primary-color); margin-top: 0;">🚀 How Recommendations Work Now:</h4>
                 <ul style="color: var(--text-secondary); line-height: 1.8;">
-                    <li><strong>Immediate Use:</strong> Your tracks are used to find similar songs in the existing dataset</li>
+                    <li><strong>Database-First:</strong> All data stored in PostgreSQL for fast access</li>
+                    <li><strong>Immediate Use:</strong> Your tracks are used to find similar songs in the database</li>
                     <li><strong>No Waiting:</strong> No need to retrain the model - recommendations work right away!</li>
-                    <li><strong>Better Matching:</strong> The system finds songs similar to your energetic gym music</li>
-                    <li><strong>Scheduled Updates:</strong> Model gets retrained during downtimes for long-term improvements</li>
+                    <li><strong>Scalable:</strong> Database handles multiple users efficiently</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.info("No new tracks added, model remains unchanged")
+            st.info("No new tracks added, database remains unchanged")
+            
+        # Return user tracks count for compatibility
+        return stored_count
             
     except Exception as e:
-        st.warning(f"Background expansion failed: {e}")
-    
-    return final_df
+        st.warning(f"Database expansion failed: {e}")
+        
+        # Return user tracks count for compatibility
+        return stored_count if stored_count is not None else 0
 
 def collect_playlist_data(sp):
     """Legacy function for collecting only playlist data (for backward compatibility)."""

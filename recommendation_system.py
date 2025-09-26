@@ -5,6 +5,7 @@ import joblib
 import os
 from models.model import MusicRecommender
 from models.utils import load_models_and_data
+from database import db
 
 class Recommendation_Engine:
     """Main recommendation engine that integrates with the trained model"""
@@ -141,13 +142,63 @@ class Recommendation_Engine:
             
         except Exception as e:
             return None, f"Error generating recommendations: {str(e)}"
-    
+
+    def get_recommendations_for_user(self, spotify_user_id: str, n_recommendations: int = 20, quick_mode: bool = False, user_preferences: dict = None):
+        """
+        Get recommendations for a user from the database
+        
+        Args:
+            spotify_user_id (str): User's Spotify ID
+            n_recommendations (int): Number of recommendations
+            quick_mode (bool): Use faster recommendation method
+            user_preferences (dict): User's mood and diversity preferences
+            
+        Returns:
+            tuple: (recommendations_list, error_message)
+        """
+        if not self.is_loaded:
+            return None, "Model not loaded. Please try again."
+        
+        try:
+            user_tracks_df = db.get_user_tracks_with_features(spotify_user_id)
+            if len(user_tracks_df) == 0:
+                return None, "No user tracks found in database. Please collect more data."
+            if len(user_tracks_df) < 3:
+                return None, "Need at least 3 tracks with audio features for good recommendations."
+            
+            # Map database columns to expected format (extend your existing mapping)
+            column_mapping = {
+                'Track ID': 'track_id',
+                'Track Name': 'track_name', 
+                'Artist(s)': 'artists',
+                'Popularity': 'popularity',
+                # Add database-specific mappings
+                'spotify_track_id': 'track_id',
+                'track_name': 'track_name',
+                'artists': 'artists',
+                'key_value': 'key',
+                'mode_value': 'mode'
+            }
+            
+            # Rename columns to match expected format
+            for old_name, new_name in column_mapping.items():
+                if old_name in user_tracks_df.columns:
+                    user_tracks_df = user_tracks_df.rename(columns={old_name: new_name})
+            
+            # Use your existing get_recommendations method - this will work with ALL your features!
+            return self.get_recommendations(user_tracks_df, n_recommendations, quick_mode, user_preferences)
+           
+        except Exception as e:
+            return None, f"Error getting recommendations for user: {str(e)}"
+
+
     def get_model_status(self):
         """Get the current status of the recommendation system"""
         return {
             'is_loaded': self.is_loaded,
             'load_error': self.load_error,
-            'model_info': self._get_model_info() if self.is_loaded else None
+            'model_info': self._get_model_info() if self.is_loaded else None,
+            'database_connected': db.test_connection()  # Add this line
         }
     
     def _get_model_info(self):

@@ -56,6 +56,11 @@ def get_features_from_spotify_id(track_id: str):
         if js.get("content"):
             df = pd.DataFrame(js["content"])
             df["Track ID"] = track_id
+            # Rename columns to match database schema
+            if 'key' in df.columns:
+                df = df.rename(columns={'key': 'key_value'})
+            if 'mode' in df.columns:
+                df = df.rename(columns={'mode': 'mode_value'})
             return df.drop(columns=["id"])
     return None
 
@@ -68,6 +73,11 @@ def get_features_from_reccoid(recco_id: str, spotify_track_id_for_join: str):
         if js.get("content"):
             df = pd.DataFrame(js["content"])
             df["Track ID"] = spotify_track_id_for_join
+            # Rename columns to match database schema
+            if 'key' in df.columns:
+                df = df.rename(columns={'key': 'key_value'})
+            if 'mode' in df.columns:
+                df = df.rename(columns={'mode': 'mode_value'})
             return df.drop(columns=["id"])
     return None
 
@@ -261,6 +271,11 @@ def get_features_from_recco_batch(track_ids):
         if js.get("content"):
             df = pd.DataFrame(js["content"])
             df["Track ID"] = df["id"]
+            # Rename columns to match database schema
+            if 'key' in df.columns:
+                df = df.rename(columns={'key': 'key_value'})
+            if 'mode' in df.columns:
+                df = df.rename(columns={'mode': 'mode_value'})
             return df.drop(columns=["id"])
     elif resp.status_code == 429:
         retry_after = int(resp.headers.get("Retry-After", 5))
