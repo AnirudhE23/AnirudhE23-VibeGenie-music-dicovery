@@ -35,11 +35,12 @@ A comprehensive Streamlit application for collecting Spotify user data and provi
 ├── main.py                     # Legacy Streamlit application
 ├── config.py                   # Configuration and environment variables
 ├── auth.py                     # Spotify authentication handling
+├── database.py                 # PostgreSQL database operations
+├── database_expansion.py       # Database expansion and user integration
 ├── data_collection.py          # Data collection and processing logic
 ├── spotify_utils.py            # Spotify API utility functions
 ├── reccobeats_utils.py         # Reccobeats API integration
 ├── recommendation_system.py    # Core recommendation engine
-├── dataset_expansion.py        # Dataset expansion and user integration
 ├── retrain_model.py            # Model retraining script
 ├── scheduled_retraining.py     # Automated retraining scheduler
 ├── style.css                   # Custom styling for the web app
@@ -164,57 +165,39 @@ streamlit run main.py
 
 ## 🗄️ Database Integration (PostgreSQL)
 
-### **Proposed Database Schema**
+### **Current Database Schema**
 
-The current system uses CSV files and parquet caching. Here's a proposed PostgreSQL schema for better scalability:
+The system now uses PostgreSQL for robust data storage and management. The database schema includes:
 
 #### **Users Table**
 ```sql
 CREATE TABLE users (
-    user_id VARCHAR(50) PRIMARY KEY,
-    spotify_id VARCHAR(50) UNIQUE NOT NULL,
+    id SERIAL PRIMARY KEY,
+    spotify_user_id VARCHAR(50) UNIQUE NOT NULL,
     display_name VARCHAR(255),
-    email VARCHAR(255),
-    country VARCHAR(10),
-    followers_count INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
 #### **Tracks Table**
 ```sql
 CREATE TABLE tracks (
-    track_id VARCHAR(50) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    spotify_track_id VARCHAR(50) UNIQUE NOT NULL,
     track_name VARCHAR(500) NOT NULL,
-    artists TEXT[] NOT NULL,
-    album_name VARCHAR(500),
-    release_date DATE,
-    duration_ms INTEGER,
+    artists TEXT,
     popularity INTEGER,
-    explicit BOOLEAN,
-    isrc VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### **Audio Features Table**
-```sql
-CREATE TABLE audio_features (
-    track_id VARCHAR(50) PRIMARY KEY REFERENCES tracks(track_id),
     acousticness DECIMAL(5,4),
     danceability DECIMAL(5,4),
     energy DECIMAL(5,4),
     instrumentalness DECIMAL(5,4),
+    key_value INTEGER,
     liveness DECIMAL(5,4),
     loudness DECIMAL(8,4),
+    mode_value INTEGER,
     speechiness DECIMAL(5,4),
     tempo DECIMAL(8,4),
     valence DECIMAL(5,4),
-    key INTEGER,
-    mode INTEGER,
-    time_signature INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
@@ -223,71 +206,42 @@ CREATE TABLE audio_features (
 ```sql
 CREATE TABLE user_tracks (
     id SERIAL PRIMARY KEY,
-    user_id VARCHAR(50) REFERENCES users(user_id),
-    track_id VARCHAR(50) REFERENCES tracks(track_id),
+    spotify_user_id VARCHAR(50) REFERENCES users(spotify_user_id),
+    spotify_track_id VARCHAR(50),
+    track_name VARCHAR(500),
+    artists TEXT,
+    acousticness DECIMAL(5,4),
+    danceability DECIMAL(5,4),
+    energy DECIMAL(5,4),
+    instrumentalness DECIMAL(5,4),
+    key_value INTEGER,
+    liveness DECIMAL(5,4),
+    loudness DECIMAL(8,4),
+    mode_value INTEGER,
+    speechiness DECIMAL(5,4),
+    tempo DECIMAL(8,4),
+    valence DECIMAL(5,4),
     playlist_name VARCHAR(255),
-    playlist_type VARCHAR(50), -- 'playlist', 'liked', 'top_tracks_short', etc.
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, track_id, playlist_name)
+    UNIQUE(spotify_user_id, spotify_track_id)
 );
 ```
 
-#### **User Taste Analysis Table**
-```sql
-CREATE TABLE user_taste_analysis (
-    id SERIAL PRIMARY KEY,
-    user_id VARCHAR(50) REFERENCES users(user_id),
-    analysis_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    total_tracks INTEGER,
-    high_energy_percentage DECIMAL(5,2),
-    chill_percentage DECIMAL(5,2),
-    focus_percentage DECIMAL(5,2),
-    emotional_percentage DECIMAL(5,2),
-    party_percentage DECIMAL(5,2),
-    medium_energy_percentage DECIMAL(5,2),
-    primary_taste VARCHAR(50),
-    secondary_taste VARCHAR(50),
-    diversity_score DECIMAL(5,2)
-);
-```
-
-#### **Recommendations Table**
-```sql
-CREATE TABLE recommendations (
-    id SERIAL PRIMARY KEY,
-    user_id VARCHAR(50) REFERENCES users(user_id),
-    recommended_track_id VARCHAR(50) REFERENCES tracks(track_id),
-    similarity_score DECIMAL(5,4),
-    source_mood VARCHAR(50),
-    recommendation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_rating INTEGER CHECK (user_rating >= 1 AND user_rating <= 5),
-    is_saved BOOLEAN DEFAULT FALSE
-);
-```
-
-#### **Model Performance Table**
-```sql
-CREATE TABLE model_performance (
-    id SERIAL PRIMARY KEY,
-    model_version VARCHAR(50),
-    training_date TIMESTAMP,
-    total_tracks INTEGER,
-    embedding_dimension INTEGER,
-    training_loss DECIMAL(10,6),
-    validation_loss DECIMAL(10,6),
-    recommendation_accuracy DECIMAL(5,4),
-    diversity_score DECIMAL(5,4),
-    is_active BOOLEAN DEFAULT FALSE
-);
-```
-
-### **Database Migration Benefits**
+### **Database Features**
 - **Scalability**: Handle thousands of users and millions of tracks
 - **Performance**: Indexed queries for fast recommendations
 - **Data Integrity**: Foreign key constraints and data validation
 - **Analytics**: Advanced querying capabilities for insights
 - **Backup & Recovery**: Robust data protection
 - **Concurrent Access**: Multiple users without file conflicts
+
+### **Database Operations**
+The `DatabaseManager` class in `database.py` provides:
+- User management (create, retrieve users)
+- Track operations (search, filter by features)
+- User track collection management
+- Database statistics and analytics
+- Track addition/removal for dataset expansion
 
 ## 🔧 Advanced Features
 
@@ -341,25 +295,27 @@ python Model_Testing/test_sample_data_generator.py
 
 ```mermaid
 graph TD
-    A[User Authentication] --> B[Data Collection]
-    B --> C[Audio Features Fetching]
-    C --> D[Data Caching]
-    D --> E[Mood Analysis]
-    E --> F[User Taste Profiling]
-    F --> G[Multi-Profile Recommendations]
-    G --> H[User Interface]
-    H --> I[Playlist Creation]
+    A[User Authentication] --> B[Database User Creation]
+    B --> C[Data Collection]
+    C --> D[Audio Features Fetching]
+    D --> E[Database Storage]
+    E --> F[Mood Analysis]
+    F --> G[User Taste Profiling]
+    G --> H[Multi-Profile Recommendations]
+    H --> I[User Interface]
+    I --> J[Playlist Creation]
 ```
 
 1. **Authentication** → User authenticates with Spotify
-2. **Data Collection** → Fetches playlists, liked songs, top tracks
-3. **Feature Fetching** → Gets audio features from Reccobeats API
-4. **Caching** → Stores features for future use
-5. **Mood Analysis** → Categorizes tracks into mood clusters
-6. **User Profiling** → Creates taste analysis and listening patterns
-7. **Recommendations** → Generates mood-based suggestions
-8. **Interface** → Displays results with user controls
-9. **Playlist Creation** → Saves recommendations to Spotify
+2. **Database User Creation** → Creates user record in PostgreSQL database
+3. **Data Collection** → Fetches playlists, liked songs, top tracks
+4. **Feature Fetching** → Gets audio features from Reccobeats API
+5. **Database Storage** → Stores user tracks and audio features in PostgreSQL
+6. **Mood Analysis** → Categorizes tracks into mood clusters
+7. **User Profiling** → Creates taste analysis and listening patterns
+8. **Recommendations** → Generates mood-based suggestions using database queries
+9. **Interface** → Displays results with user controls
+10. **Playlist Creation** → Saves recommendations to Spotify
 
 ## 🔧 Technical Details
 
@@ -521,18 +477,6 @@ python Model_Testing/comprehensive_test.py
 - Add docstrings to new functions
 - Include type hints where appropriate
 - Update documentation for new features
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **Spotify**: For the comprehensive music API
-- **Reccobeats**: For audio features data
-- **Streamlit**: For the excellent web framework
-- **TensorFlow**: For machine learning capabilities
-- **scikit-learn**: For data processing utilities
 
 ## 📞 Support
 
