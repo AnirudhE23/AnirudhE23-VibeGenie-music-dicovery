@@ -44,6 +44,10 @@ A comprehensive Streamlit application for collecting Spotify user data and provi
 ├── retrain_model.py            # Model retraining script
 ├── scheduled_retraining.py     # Automated retraining scheduler
 ├── style.css                   # Custom styling for the web app
+├── Dockerfile                  # Docker container configuration
+├── docker-compose.yml          # Docker Compose setup for local development
+├── init.sql                    # Database schema initialization
+├── .dockerignore               # Docker ignore file
 ├── models/                     # Machine learning model components
 │   ├── model.py               # Model architecture and recommender class
 │   ├── train.py               # Training pipeline
@@ -65,6 +69,7 @@ A comprehensive Streamlit application for collecting Spotify user data and provi
 
 ### 1. **Prerequisites**
 - Python 3.8 or higher
+- Docker and Docker Compose (for containerized deployment)
 - Spotify Developer Account
 - Git
 
@@ -87,6 +92,7 @@ Create a `.env` file in the project root:
 ```env
 CLIENT_ID=your_spotify_client_id
 CLIENT_SECRET=your_spotify_client_secret
+DB_PASSWORD=your_database_password
 ```
 
 **Getting Spotify Credentials:**
@@ -96,6 +102,8 @@ CLIENT_SECRET=your_spotify_client_secret
 4. Add `http://127.0.0.1:8501/callback` to Redirect URIs
 
 ### 4. **Run the Application**
+
+#### **Option A: Local Development**
 ```bash
 # Run the latest version with mood-based recommendations
 streamlit run new_main.py
@@ -103,6 +111,23 @@ streamlit run new_main.py
 # Or run the legacy version
 streamlit run main.py
 ```
+
+#### **Option B: Docker Containerized (Recommended)**
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Run in background
+docker-compose up --build -d
+
+# Stop containers
+docker-compose down
+
+# Stop and remove volumes (clears database)
+docker-compose down -v
+```
+
+**Access the application at:** `http://localhost:8501`
 
 ### 5. **First Time Setup**
 1. **Authenticate**: Click "🎵 Connect with Spotify" on the landing page
@@ -162,6 +187,53 @@ streamlit run main.py
 3. **Lets you choose preferences** → Select which moods you want recommendations for
 4. **Generates diverse recommendations** → Creates separate profiles for each mood and combines them intelligently
 5. **Applies your settings** → Uses your diversity and energy preferences
+
+## 🐳 Docker Containerization
+
+### **Containerized Architecture**
+The application is fully containerized for consistent deployment across environments:
+
+#### **Docker Services**
+- **Web App**: Streamlit application with all dependencies
+- **PostgreSQL**: Database with automatic schema initialization
+- **Networking**: Internal Docker network for service communication
+
+#### **Key Features**
+- ✅ **OAuth Compatibility**: Fixed Spotify authentication for containerized environments
+- ✅ **Database Persistence**: PostgreSQL data persists between container restarts
+- ✅ **Environment Isolation**: Consistent runtime environment
+- ✅ **Easy Deployment**: Single command deployment with `docker-compose up`
+- ✅ **Production Ready**: Optimized for cloud deployment (Render, AWS, etc.)
+
+#### **Docker Commands**
+```bash
+# Development
+docker-compose up --build          # Build and run
+docker-compose up --build -d       # Run in background
+docker-compose down                # Stop containers
+docker-compose down -v             # Stop and clear database
+
+# Database operations
+docker exec -it spotifyapiproj-postgres-1 psql -U postgres -d music_recommender
+docker logs spotifyapiproj-webapp-1    # View app logs
+docker logs spotifyapiproj-postgres-1  # View database logs
+```
+
+#### **Environment Variables**
+The Docker setup uses environment variables for configuration:
+```env
+# Spotify API
+CLIENT_ID=your_spotify_client_id
+CLIENT_SECRET=your_spotify_client_secret
+SPOTIPY_REDIRECT_URI=http://127.0.0.1:8501/callback
+
+# Database
+DB_HOST=postgres
+DB_PORT=5432
+DB_NAME=music_recommender
+DB_USER=postgres
+DB_PASSWORD=your_database_password
+```
 
 ## 🗄️ Database Integration (PostgreSQL)
 
@@ -412,20 +484,55 @@ Use the "Debug Tools" section in the app to:
 
 ## 🚀 Deployment
 
-### **Local Deployment**
+### **Local Development**
 ```bash
-# Run the application
+# Run the application locally
 streamlit run new_main.py
+
+# Or use Docker for consistent environment
+docker-compose up --build
 
 # Access at http://localhost:8501
 ```
 
+### **Production Deployment**
+
+#### **Option 1: Render + Neon (Recommended)**
+1. **Set up Neon Database:**
+   - Create account at [neon.tech](https://neon.tech)
+   - Create new project
+   - Get connection string
+   - Import your tracks data
+
+2. **Deploy to Render:**
+   - Connect GitHub repository to Render
+   - Set environment variables:
+     ```
+     CLIENT_ID=your_spotify_client_id
+     CLIENT_SECRET=your_spotify_client_secret
+     DB_HOST=your_neon_host
+     DB_PORT=5432
+     DB_NAME=your_neon_database
+     DB_USER=your_neon_user
+     DB_PASSWORD=your_neon_password
+     SPOTIPY_REDIRECT_URI=https://your-render-app.onrender.com/callback
+     ```
+   - Deploy using Dockerfile
+
+#### **Option 2: Docker Compose (Self-hosted)**
+```bash
+# Production deployment with Docker Compose
+docker-compose -f docker-compose.prod.yml up -d
+```
+
 ### **Production Considerations**
 - **Environment Variables**: Secure storage of API credentials
+- **Database**: Use managed PostgreSQL (Neon, AWS RDS, etc.)
 - **Model Files**: Ensure all .h5, .pkl, .npy files are present
 - **Data Storage**: Sufficient space for cache and datasets
-- **Database**: Consider PostgreSQL migration for scalability
+- **SSL/HTTPS**: Configure for production security
 - **Monitoring**: Regular model retraining and performance checks
+- **Backup**: Regular database backups
 
 ## 📝 File Descriptions
 
@@ -433,13 +540,20 @@ streamlit run new_main.py
 - **`new_main.py`**: Latest Streamlit UI with mood-based recommendations
 - **`main.py`**: Legacy Streamlit UI
 - **`config.py`**: Centralized configuration
-- **`auth.py`**: Spotify OAuth handling
+- **`auth.py`**: Spotify OAuth handling (Docker-compatible)
+- **`database.py`**: PostgreSQL database operations
 - **`data_collection.py`**: Main data collection logic
 - **`spotify_utils.py`**: Spotify API utilities
 - **`reccobeats_utils.py`**: Reccobeats API integration
 - **`recommendation_system.py`**: Core recommendation engine
-- **`dataset_expansion.py`**: Dataset expansion and user integration
+- **`database_expansion.py`**: Dataset expansion and user integration
 - **`style.css`**: Custom styling for modern UI
+
+### **Docker & Deployment**
+- **`Dockerfile`**: Container configuration for production deployment
+- **`docker-compose.yml`**: Local development with PostgreSQL
+- **`init.sql`**: Database schema initialization
+- **`.dockerignore`**: Docker build optimization
 
 ### **Model System**
 - **`models/model.py`**: Model architecture and recommender class
