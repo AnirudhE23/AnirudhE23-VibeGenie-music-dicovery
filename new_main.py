@@ -64,19 +64,41 @@ def show_landing_page():
     col1, col2, col3 = st.columns([1.4, 1, 1])
     with col2:
         st.markdown('<div class="hero-button-container">', unsafe_allow_html=True)
-        if st.button("🎵 Connect with Spotify", key="hero_connect", help="Connect your Spotify account to get started", type="primary"):
-            try:
-                sp, user_cache = auth.get_spotify_client()
-                if sp:
-                    st.session_state.sp = sp
-                    st.session_state.user_cache = user_cache
-                    st.session_state.authenticated = True
-                    st.success("🎉 Successfully connected to Spotify!")
-                    st.rerun()
-                else:
-                    st.error("❌ Connection failed. Please try again.")
-            except Exception as e:
-                st.error(f"❌ Connection error: {e}")
+        
+        # Create auth URL for the link button
+        from spotipy.oauth2 import SpotifyOAuth
+        auth_manager = SpotifyOAuth(
+            client_id=config.CLIENT_ID,
+            client_secret=config.CLIENT_SECRET,
+            redirect_uri=config.REDIRECT_URI,
+            scope=config.SCOPE,
+            show_dialog=True,
+        )
+        auth_url = auth_manager.get_authorize_url()
+        
+        # Create a styled link button that navigates to Spotify
+        st.markdown(
+            f'''
+            <a href="{auth_url}" target="_self" style="
+                display: inline-block;
+                padding: 0.5rem 2rem;
+                background-color: #1DB954;
+                color: white;
+                text-decoration: none;
+                border-radius: 500px;
+                font-weight: 600;
+                text-align: center;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            " onmouseover="this.style.backgroundColor='#1ed760'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.15)';" 
+               onmouseout="this.style.backgroundColor='#1DB954'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';">
+                🎵 Connect with Spotify
+            </a>
+            ''',
+            unsafe_allow_html=True
+        )
+        
         st.markdown('</div>', unsafe_allow_html=True)
     
     # AI Recommendations section with image
@@ -338,7 +360,12 @@ def show_Music_recommendations():
     
     # Check if user data is collected
     try: 
-        user_tracks_df = pd.read_csv(config.USER_TRACKS_CSV, index_col=0)
+        user = st.session_state.sp.current_user()
+        spotify_user_id = user['id']
+
+        # Read from database instead of CSV
+        user_tracks_df = db.get_user_tracks_with_features(spotify_user_id)
+
         if len(user_tracks_df) == 0:
             st.warning("No user data found. Please collect your Spotify data first.")
             return
@@ -505,7 +532,7 @@ def show_Music_recommendations():
                     progress_bar.progress(20)
                     
                     # Step 2: Generating recommendations
-                    status_text.text("🎵 Finding similar songs in the dataset...")
+                    status_text.text("🎵 Finding similar songs in the database...")
                     progress_bar.progress(60)
 
                     # Get user preferences (with defaults if not set)
@@ -619,9 +646,6 @@ def show_Music_recommendations():
             if st.button("🎵 Save as Spotify Playlist", type="primary", use_container_width=True):
                 if playlist_name.strip():
                     try:
-                        # Debug: Check if we have recommendations
-                        st.write(f"Debug: Creating playlist with {len(recommendations)} recommendations")
-                        
                         # Import the playlist creation function
                         from spotify_utils import create_playlist_from_recommendations
                         
@@ -700,7 +724,7 @@ def show_Music_recommendations():
 
         # Filter to show only tracks from user's top tracks
         top_tracks_pattern = r'Top Tracks \(.*\)'
-        top_tracks_only = tracks_with_features[tracks_with_features['Playlist Name'].str.contains(top_tracks_pattern, na=False)]        
+        top_tracks_only = tracks_with_features[tracks_with_features['playlist_name'].str.contains(top_tracks_pattern, na=False)]        
 
         # Mapping column names to match the CSV structure
         display_columns = []
@@ -743,7 +767,8 @@ def show_Music_recommendations():
                 avg_energy = tracks_with_features['energy'].mean() if 'energy' in tracks_with_features.columns else 0
                 avg_danceability = tracks_with_features['danceability'].mean() if 'danceability' in tracks_with_features.columns else 0
                 avg_valence = tracks_with_features['valence'].mean() if 'valence' in tracks_with_features.columns else 0
-                avg_popularity = tracks_with_features['Popularity'].mean() if 'Popularity' in tracks_with_features.columns else 0
+                pop_col = 'Popularity' if 'Popularity' in tracks_with_features.columns else 'popularity'
+                avg_popularity = tracks_with_features[pop_col].mean() if pop_col in tracks_with_features.columns else 0
                 
                                 
                 # Music style description
@@ -809,8 +834,6 @@ pages = [
     st.Page(collect_data_page, title="📥 Collect Data"),
     st.Page(view_data_page, title="📊 View Data"),
     st.Page(recommendations_page, title="🤖 AI Recommendations"),
-    # st.Page(debug_tools_page, title="🔧 Debug Tools"),
-    # st.Page(settings_page, title="⚙️ Settings"),
 ]
 
 # Check for OAuth callback first

@@ -1,0 +1,54 @@
+version: '3.8' 
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17.6
+    environment:
+      - POSTGRES_DB=music_recommender
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Streamlit Application
+  webapp:
+    build: .
+    ports:
+      - "8501:8501"  # Fixed: Use same port for consistency
+    env_file:
+      - .env
+    environment:
+      - SPOTIPY_REDIRECT_URI=http://127.0.0.1:8501/callback  # Fixed: Match the port
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=music_recommender
+      - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPOTIPY_CLIENT_ID=${CLIENT_ID}
+      - SPOTIPY_CLIENT_SECRET=${CLIENT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./cache:/app/cache
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

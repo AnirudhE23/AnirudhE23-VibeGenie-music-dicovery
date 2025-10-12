@@ -199,11 +199,13 @@ class DatabaseManager:
                 AND acousticness IS NOT NULL
                 AND danceability IS NOT NULL
                 AND energy IS NOT NULL
-                AND key_value IS NOT NULL
-                AND mode_value IS NOT NULL
                 ORDER BY added_at DESC
                 """
-                return pd.read_sql_query(query, conn, params=[spotify_user_id])
+                df = pd.read_sql_query(query, conn, params=[spotify_user_id])
+                # Replace NaN strings with actual NaN for pandas
+                import numpy as np
+                df = df.replace([np.nan, 'NaN'], pd.NA)
+                return df
         except Exception as e:
             print(f"Error getting user tracks with features: {e}")
             return pd.DataFrame()
