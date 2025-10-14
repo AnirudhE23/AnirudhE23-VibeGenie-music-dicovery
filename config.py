@@ -7,7 +7,7 @@ load_dotenv()
 CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
 # Use environment variable for Docker compatibility, fallback to localhost
-REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI', 'http://127.0.0.1:8501/callback')
+REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
 SCOPE = 'playlist-read-private playlist-read-collaborative user-library-read user-top-read playlist-modify-public playlist-modify-private'
 
 CSV_OUTPUT = "spotify_tracks.csv"
