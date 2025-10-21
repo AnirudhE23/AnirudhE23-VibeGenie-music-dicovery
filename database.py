@@ -4,6 +4,7 @@ import pandas as pd
 from typing import List, Dict, Optional, Tuple
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 # Load environment variables
 load_dotenv()
@@ -12,13 +13,24 @@ class DatabaseManager:
     """Handles all database operations for the music recommendation system"""
     
     def __init__(self):
-        self.connection_params = {
-            'host': os.getenv('DB_HOST'),
-            'port': os.getenv('DB_PORT'),
-            'database': os.getenv('DB_NAME'),
-            'user': os.getenv('DB_USER'),
-            'password': os.getenv('DB_PASSWORD')
-        }
+        if os.getenv('DATABASE_URL'):
+            # Parse the DATABASE_URL
+            url = urlparse(os.getenv('DATABASE_URL'))
+            self.connection_params = {
+                'host': url.hostname,
+                'port': url.port,
+                'database': url.path[1:],
+                'user': url.username,
+                'password': url.password
+            }
+        else:
+            self.connection_params = {
+                'host': os.getenv('DB_HOST'),
+                'port': os.getenv('DB_PORT'),
+                'database': os.getenv('DB_NAME'),
+                'user': os.getenv('DB_USER'),
+                'password': os.getenv('DB_PASSWORD')
+            }
     
     def get_connection(self):
         """Get a database connection"""
