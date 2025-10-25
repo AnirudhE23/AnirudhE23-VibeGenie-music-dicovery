@@ -1,6 +1,12 @@
 # 🎵 VibeGenie - AI Music Discovery Platform
 
-A comprehensive Streamlit application for collecting Spotify user data and providing AI-powered music recommendations using advanced machine learning. The system features mood-based recommendations, user taste analysis, and intelligent music discovery powered by autoencoder models and audio feature analysis.
+A comprehensive Streamlit application for collecting Spotify user data and providing AI-powered music recommendations using advanced machine learning. The system features mood-based recommendations, user taste analysis, and intelligent music discovery powered by an autoencoder model and audio feature analysis.
+
+## 🌐 Live Demo
+
+**🚀 [Try VibeGenie Live](https://vibegenie-music-dicovery.onrender.com/)**
+
+The application is currently deployed on Render and ready to use! Simply click the link above to start discovering your next favorite songs with AI-powered mood-based recommendations.
 
 ## ✨ Key Features
 
@@ -191,19 +197,22 @@ docker-compose down -v
 ## 🐳 Docker Containerization
 
 ### **Containerized Architecture**
-The application is fully containerized for consistent deployment across environments:
+The application is fully containerized for consistent deployment across environments with production-ready optimizations:
 
 #### **Docker Services**
 - **Web App**: Streamlit application with all dependencies
-- **PostgreSQL**: Database with automatic schema initialization
+- **PostgreSQL**: Database with automatic schema initialization (local development)
 - **Networking**: Internal Docker network for service communication
 
-#### **Key Features**
+#### **Production Docker Features**
+- ✅ **Health Checks**: Built-in health monitoring with curl-based checks
+- ✅ **Port Configuration**: Dynamic port binding for cloud platforms (Render, Heroku)
+- ✅ **Environment Variables**: Full support for production environment configuration
 - ✅ **OAuth Compatibility**: Fixed Spotify authentication for containerized environments
 - ✅ **Database Persistence**: PostgreSQL data persists between container restarts
 - ✅ **Environment Isolation**: Consistent runtime environment
 - ✅ **Easy Deployment**: Single command deployment with `docker-compose up`
-- ✅ **Production Ready**: Optimized for cloud deployment (Render, AWS, etc.)
+- ✅ **Cloud Ready**: Optimized for cloud deployment (Render, AWS, etc.)
 
 #### **Docker Commands**
 ```bash
@@ -221,13 +230,15 @@ docker logs spotifyapiproj-postgres-1  # View database logs
 
 #### **Environment Variables**
 The Docker setup uses environment variables for configuration:
+
+**Local Development:**
 ```env
 # Spotify API
 CLIENT_ID=your_spotify_client_id
 CLIENT_SECRET=your_spotify_client_secret
 SPOTIPY_REDIRECT_URI=http://127.0.0.1:8501/callback
 
-# Database
+# Local Database
 DB_HOST=postgres
 DB_PORT=5432
 DB_NAME=music_recommender
@@ -235,11 +246,29 @@ DB_USER=postgres
 DB_PASSWORD=your_database_password
 ```
 
-## 🗄️ Database Integration (PostgreSQL)
+**Production Deployment:**
+```env
+# Spotify API
+CLIENT_ID=your_spotify_client_id
+CLIENT_SECRET=your_spotify_client_secret
+SPOTIPY_REDIRECT_URI=https://your-app.onrender.com/callback
 
-### **Current Database Schema**
+# Neon Database (Production)
+DATABASE_URL=postgresql://user:password@host:port/database
+PORT=8501
+```
 
-The system now uses PostgreSQL for robust data storage and management. The database schema includes:
+## 🗄️ Database Integration (PostgreSQL + Neon)
+
+### **Production Database Setup**
+
+The system now uses **Neon PostgreSQL** for production deployment with robust data storage and management. The database supports both local development and cloud production environments.
+
+### **Database Architecture**
+- **Local Development**: PostgreSQL via Docker Compose
+- **Production**: Neon PostgreSQL (serverless, auto-scaling)
+- **Migration**: Automated scripts for data transfer
+- **Connection**: Environment-based configuration (DATABASE_URL support)
 
 #### **Users Table**
 ```sql
@@ -309,11 +338,26 @@ CREATE TABLE user_tracks (
 
 ### **Database Operations**
 The `DatabaseManager` class in `database.py` provides:
-- User management (create, retrieve users)
-- Track operations (search, filter by features)
-- User track collection management
-- Database statistics and analytics
-- Track addition/removal for dataset expansion
+- **Dual Environment Support**: Automatic detection of local vs production database
+- **DATABASE_URL Support**: Seamless connection to Neon PostgreSQL
+- **User Management**: Create, retrieve users with conflict handling
+- **Track Operations**: Search, filter by features with optimized queries
+- **User Track Collection**: Comprehensive user music library management
+- **Database Statistics**: Real-time analytics and performance metrics
+- **Dataset Expansion**: Automated track addition/removal for ML training
+
+### **Database Migration**
+```bash
+# Migrate from local PostgreSQL to Neon
+python migrate_to_NeonDB.py
+```
+
+**Migration Features:**
+- ✅ **Batch Processing**: Efficient transfer of large datasets (1000 tracks/batch)
+- ✅ **Conflict Resolution**: Automatic handling of duplicate tracks
+- ✅ **Progress Tracking**: Real-time migration progress with percentage
+- ✅ **Data Integrity**: Verification of successful data transfer
+- ✅ **Connection Management**: Automatic connection to both local and Neon databases
 
 ## 🔧 Advanced Features
 
@@ -497,12 +541,16 @@ docker-compose up --build
 
 ### **Production Deployment**
 
-#### **Option 1: Render + Neon (Recommended)**
+#### **Option 1: Render + Neon (Recommended & Currently Deployed)**
+✅ **Live Deployment**: The application is currently deployed on Render with Neon database
+
+**🌐 [Access Live Application](https://vibegenie-music-dicovery.onrender.com/)**
+
 1. **Set up Neon Database:**
    - Create account at [neon.tech](https://neon.tech)
    - Create new project
-   - Get connection string
-   - Import your tracks data
+   - Get connection string (DATABASE_URL format)
+   - Use migration script to transfer data from local database
 
 2. **Deploy to Render:**
    - Connect GitHub repository to Render
@@ -510,14 +558,17 @@ docker-compose up --build
      ```
      CLIENT_ID=your_spotify_client_id
      CLIENT_SECRET=your_spotify_client_secret
-     DB_HOST=your_neon_host
-     DB_PORT=5432
-     DB_NAME=your_neon_database
-     DB_USER=your_neon_user
-     DB_PASSWORD=your_neon_password
+     DATABASE_URL=postgresql://user:password@host:port/database
      SPOTIPY_REDIRECT_URI=https://your-render-app.onrender.com/callback
+     PORT=8501
      ```
-   - Deploy using Dockerfile
+   - Deploy using Dockerfile (production-ready with health checks)
+
+3. **Database Migration:**
+   ```bash
+   # Migrate from local PostgreSQL to Neon
+   python migrate_to_NeonDB.py
+   ```
 
 #### **Option 2: Docker Compose (Self-hosted)**
 ```bash
@@ -526,13 +577,14 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ### **Production Considerations**
-- **Environment Variables**: Secure storage of API credentials
-- **Database**: Use managed PostgreSQL (Neon, AWS RDS, etc.)
-- **Model Files**: Ensure all .h5, .pkl, .npy files are present
-- **Data Storage**: Sufficient space for cache and datasets
-- **SSL/HTTPS**: Configure for production security
-- **Monitoring**: Regular model retraining and performance checks
-- **Backup**: Regular database backups
+- **Environment Variables**: Secure storage of API credentials via platform environment variables
+- **Database**: Neon PostgreSQL (serverless, auto-scaling, managed backups)
+- **Model Files**: All .h5, .pkl, .npy files included in Docker image
+- **Data Storage**: Neon handles data persistence and scaling automatically
+- **SSL/HTTPS**: Automatic HTTPS via Render platform
+- **Health Monitoring**: Built-in health checks with automatic restart
+- **Database Migration**: Automated migration scripts for data transfer
+- **Performance**: Optimized for cloud deployment with connection pooling
 
 ## 📝 File Descriptions
 
@@ -550,10 +602,11 @@ docker-compose -f docker-compose.prod.yml up -d
 - **`style.css`**: Custom styling for modern UI
 
 ### **Docker & Deployment**
-- **`Dockerfile`**: Container configuration for production deployment
+- **`Dockerfile`**: Production-ready container with health checks and cloud optimization
 - **`docker-compose.yml`**: Local development with PostgreSQL
 - **`init.sql`**: Database schema initialization
 - **`.dockerignore`**: Docker build optimization
+- **`migrate_to_NeonDB.py`**: Database migration script for Neon PostgreSQL
 
 ### **Model System**
 - **`models/model.py`**: Model architecture and recommender class
