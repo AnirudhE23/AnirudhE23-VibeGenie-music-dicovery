@@ -39,14 +39,6 @@ if 'current_recommendations' not in st.session_state:
 if 'playlist_creation_result' not in st.session_state:
     st.session_state.playlist_creation_result = None
 
-# Loading the recommendation engine
-if not st.session_state.recommendation_engine_loaded:
-    with st.spinner("Loading recommendation engine..."):
-        recommendation_engine.load_model()
-        st.session_state.recommendation_engine_loaded = True
-        
-
-# ... existing code ...
 
 def show_landing_page():
     """Show the modern landing page."""
@@ -321,6 +313,13 @@ def show_view_data():
 
 def show_Music_recommendations():
     """Show Music recommendations with enhanced styling."""
+
+    # Loading the recommendation engine
+    if not st.session_state.recommendation_engine_loaded:
+        with st.spinner("Loading recommendation engine..."):
+            recommendation_engine.load_model()
+            st.session_state.recommendation_engine_loaded = True
+
     st.markdown("# 🤖 AI Music Recommendations")
     
     # Check model status

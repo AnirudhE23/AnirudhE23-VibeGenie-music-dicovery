@@ -10,11 +10,6 @@ script_test.py
 spotify_tracks.csv
 *.parquet
 
-# Model files
-*.h5
-*.pkl
-*.npy
-song_metadata.csv
 merged_spotify_tracks.csv
 merged_tracks.csv
 spotify_user_tracks.csv
