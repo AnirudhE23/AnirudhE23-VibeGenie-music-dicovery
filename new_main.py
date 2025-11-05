@@ -44,10 +44,10 @@ def show_landing_page():
     """Show the modern landing page."""
     st.markdown("""
     <div class="hero-content">
-        <h1 class="hero-title">Get closer to the Edge.</h1>
+        <h1 class="hero-title">Find your next obsession</h1>
         <p class="hero-subtitle">
             Discover your next favorite song with AI-powered recommendations. 
-            Connect your Spotify and dive into a world of personalized music discovery.
+            Connect your Spotify account and dive into a world of personalized music discovery.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -137,7 +137,7 @@ def show_landing_page():
                 <div class="how-it-works-icon">🔌</div>
                 <h3 class="how-it-works-title">Connect</h3>
                 <p class="how-it-works-description">
-                    Connect your Spotify account securely to access your music library and preferences.
+                    Connect your Spotify account to access your music library and preferences.
                 </p>
             </div>
             <div class="how-it-works-card">
